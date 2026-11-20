@@ -1,6 +1,6 @@
 # Agent guide
 
-`ledger` is a tiny expense ledger. It exists to test the Rotisserie factory, so every issue is small and self-contained.
+`ledger` is a tiny expense ledger.
 
 ## Layout
 
@@ -23,4 +23,3 @@ uv run pytest -q
 - Change only what the assigned issue or PR asks for.
 - Use `Decimal` for money, never `float`.
 - Keep the standard library only. Do not add dependencies.
-- Do not commit or push. The factory wrapper persists your changes.

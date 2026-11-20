@@ -1,6 +1,6 @@
-# rotisserie-sandbox
+# ledger
 
-A tiny expense ledger used to test the [Rotisserie](https://github.com/JoshCLWren/rotisserie) factory on small, clear issues, without a legacy code base.
+A tiny expense ledger.
 
 ```bash
 uv sync
