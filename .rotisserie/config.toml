@@ -1,0 +1,10 @@
+# Rotisserie adopter configuration for the factory sandbox.
+schema_version = 1
+
+[repository]
+host = "github.com"
+owner = "JoshCLWren"
+name = "rotisserie-sandbox"
+
+[markers]
+namespace = "rotisserie-sandbox-factory"
