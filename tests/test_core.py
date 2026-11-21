@@ -55,3 +55,13 @@ def test_empty_category_raises_value_error() -> None:
 def test_blank_category_after_stripping_raises_value_error() -> None:
     with pytest.raises(ValueError):
         Entry(date(2026, 1, 1), Decimal("2.50"), "   ")
+
+
+def test_is_empty_returns_true_when_no_entries() -> None:
+    assert Ledger().is_empty() is True
+
+
+def test_is_empty_returns_false_after_adding_entry() -> None:
+    ledger = Ledger()
+    ledger.add(Entry(date(2026, 1, 1), Decimal("2.50"), "food"))
+    assert ledger.is_empty() is False

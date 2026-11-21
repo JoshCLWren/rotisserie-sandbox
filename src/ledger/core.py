@@ -31,5 +31,8 @@ class Ledger:
     def count(self) -> int:
         return len(self.entries)
 
+    def is_empty(self) -> bool:
+        return not self.entries
+
     def total(self) -> Decimal:
         return sum((entry.amount for entry in self.entries), Decimal("0"))
