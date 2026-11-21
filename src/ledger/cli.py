@@ -4,25 +4,53 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from datetime import date
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 from pathlib import Path
 
 from ledger.core import Entry, Ledger
+
+REQUIRED_FIELDS = ("day", "amount", "category")
+
+
+class LedgerReadError(Exception):
+    """Raised when a ledger file cannot be read or decoded."""
+
+
+def _read_entry(row: object, number: int) -> Entry:
+    if not isinstance(row, dict):
+        raise LedgerReadError(f"row {number} is not an object")
+    for name in REQUIRED_FIELDS:
+        if name not in row:
+            raise LedgerReadError(f"row {number} is missing field {name!r}")
+    try:
+        day = date.fromisoformat(row["day"])
+    except (TypeError, ValueError) as exc:
+        raise LedgerReadError(f"row {number} has an invalid day: {row['day']!r}") from exc
+    try:
+        amount = Decimal(str(row["amount"]))
+    except (InvalidOperation, TypeError) as exc:
+        raise LedgerReadError(f"row {number} has an invalid amount: {row['amount']!r}") from exc
+    category = row["category"]
+    note = row.get("note", "")
+    if not isinstance(category, str) or not isinstance(note, str):
+        raise LedgerReadError(f"row {number} has an invalid category or note")
+    return Entry(day, amount, category, note)
 
 
 def load(path: Path) -> Ledger:
     if not path.exists():
         return Ledger()
-    rows = json.loads(path.read_text())
-    return Ledger(
-        [
-            Entry(
-                date.fromisoformat(r["day"]), Decimal(r["amount"]), r["category"], r.get("note", "")
-            )
-            for r in rows
-        ]
-    )
+    try:
+        rows = json.loads(path.read_text())
+    except json.JSONDecodeError as exc:
+        raise LedgerReadError(f"invalid JSON: {exc}") from exc
+    except (OSError, UnicodeError) as exc:
+        raise LedgerReadError(str(exc)) from exc
+    if not isinstance(rows, list):
+        raise LedgerReadError("expected a JSON array of entries")
+    return Ledger([_read_entry(row, number) for number, row in enumerate(rows, start=1)])
 
 
 def save(ledger: Ledger, path: Path) -> None:
@@ -45,7 +73,11 @@ def main(argv: list[str] | None = None) -> int:
     sub.add_parser("total", help="print the total of all expenses")
     args = parser.parse_args(argv)
 
-    ledger = load(args.file)
+    try:
+        ledger = load(args.file)
+    except LedgerReadError as exc:
+        print(f"ledger: cannot read {args.file}: {exc}", file=sys.stderr)
+        return 1
     if args.command == "add":
         ledger.add(
             Entry(date.fromisoformat(args.day), Decimal(args.amount), args.category, args.note)
