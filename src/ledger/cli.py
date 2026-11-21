@@ -39,9 +39,7 @@ def export_csv(ledger: Ledger, path: Path) -> None:
         writer = csv.writer(fh)
         writer.writerow(["day", "amount", "category", "note"])
         for entry in ledger.entries:
-            writer.writerow(
-                [entry.day.isoformat(), str(entry.amount), entry.category, entry.note]
-            )
+            writer.writerow([entry.day.isoformat(), str(entry.amount), entry.category, entry.note])
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -64,6 +62,9 @@ def main(argv: list[str] | None = None) -> int:
             Entry(date.fromisoformat(args.day), Decimal(args.amount), args.category, args.note)
         )
         save(ledger, args.file)
+        return 0
+    if args.command == "export":
+        export_csv(ledger, args.csv)
         return 0
     print(ledger.total())
     return 0
