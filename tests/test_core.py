@@ -1,6 +1,7 @@
 from datetime import date
 from decimal import Decimal
 
+import ledger
 from ledger import Entry, Ledger
 
 
@@ -13,3 +14,7 @@ def test_total_sums_every_entry() -> None:
 
 def test_empty_ledger_totals_zero() -> None:
     assert Ledger().total() == Decimal("0")
+
+
+def test_package_version() -> None:
+    assert ledger.__version__ == "0.1.0"
