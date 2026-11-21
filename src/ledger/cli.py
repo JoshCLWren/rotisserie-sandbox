@@ -43,6 +43,7 @@ def main(argv: list[str] | None = None) -> int:
     add.add_argument("--note", default="")
     add.add_argument("--day", default=date.today().isoformat())
     sub.add_parser("total", help="print the total of all expenses")
+    sub.add_parser("list", help="list every expense, oldest day first")
     args = parser.parse_args(argv)
 
     ledger = load(args.file)
@@ -51,6 +52,14 @@ def main(argv: list[str] | None = None) -> int:
             Entry(date.fromisoformat(args.day), Decimal(args.amount), args.category, args.note)
         )
         save(ledger, args.file)
+        return 0
+    if args.command == "list":
+        entries = sorted(ledger.entries, key=lambda entry: entry.day)
+        if not entries:
+            print("No expenses recorded.")
+        else:
+            for entry in entries:
+                print(f"{entry.day.isoformat()}  {entry.amount}  {entry.category}  {entry.note}")
         return 0
     print(ledger.total())
     return 0
