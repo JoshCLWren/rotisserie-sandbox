@@ -32,7 +32,6 @@ def test_empty_ledger_totals_zero() -> None:
     assert Ledger().total() == Decimal("0")
 
 
-<<<<<<< HEAD
 def test_total_by_month_groups_entries_in_month_order() -> None:
     ledger = Ledger()
     ledger.add(Entry(date(2026, 2, 1), Decimal("1.25"), "food"))
@@ -49,7 +48,8 @@ def test_total_by_month_groups_entries_in_month_order() -> None:
 
 def test_empty_ledger_has_no_monthly_totals() -> None:
     assert Ledger().total_by_month() == {}
-=======
+
+
 def test_category_is_lowercased() -> None:
     entry = Entry(date(2026, 1, 1), Decimal("2.50"), "Food")
     assert entry.category == "food"
@@ -83,4 +83,3 @@ def test_is_empty_returns_false_after_adding_entry() -> None:
     ledger = Ledger()
     ledger.add(Entry(date(2026, 1, 1), Decimal("2.50"), "food"))
     assert ledger.is_empty() is False
->>>>>>> origin/main
