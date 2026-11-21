@@ -10,6 +10,7 @@ from decimal import Decimal, InvalidOperation
 from pathlib import Path
 
 from ledger.core import Entry, Ledger
+from ledger.export import export_csv
 
 REQUIRED_FIELDS = ("day", "amount", "category")
 
@@ -61,10 +62,22 @@ def save(ledger: Ledger, path: Path) -> None:
     path.write_text(json.dumps(rows, indent=2) + "\n")
 
 
+def export_csv_command(source: Path, destination: Path) -> int:
+    try:
+        ledger = load(source)
+    except Exception as exc:
+        print(f"ledger: cannot read {source}: {exc}", file=sys.stderr)
+        return 1
+    export_csv(ledger, destination)
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="ledger")
     parser.add_argument("--file", type=Path, default=Path("ledger.json"))
     sub = parser.add_subparsers(dest="command", required=True)
+    export = sub.add_parser("export", help="write the ledger to CSV")
+    export.add_argument("--csv", type=Path, required=True, help="destination CSV path")
     add = sub.add_parser("add", help="record an expense")
     add.add_argument("amount")
     add.add_argument("category")
@@ -78,6 +91,8 @@ def main(argv: list[str] | None = None) -> int:
     )
     sub.add_parser("list", help="list every expense, oldest day first")
     args = parser.parse_args(argv)
+    if args.command == "export":
+        return export_csv_command(args.file, args.csv)
 
     try:
         ledger = load(args.file)
