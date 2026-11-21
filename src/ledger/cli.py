@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import csv
 import json
 from datetime import date
 from decimal import Decimal
@@ -33,6 +34,22 @@ def save(ledger: Ledger, path: Path) -> None:
     path.write_text(json.dumps(rows, indent=2) + "\n")
 
 
+def import_csv(path: Path) -> Ledger:
+    ledger = Ledger()
+    with path.open("r", newline="") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            ledger.add(
+                Entry(
+                    day=date.fromisoformat(row["day"]),
+                    amount=Decimal(row["amount"]),
+                    category=row["category"],
+                    note=row.get("note", ""),
+                )
+            )
+    return ledger
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="ledger")
     parser.add_argument("--file", type=Path, default=Path("ledger.json"))
@@ -43,6 +60,10 @@ def main(argv: list[str] | None = None) -> int:
     add.add_argument("--note", default="")
     add.add_argument("--day", default=date.today().isoformat())
     sub.add_parser("total", help="print the total of all expenses")
+    export = sub.add_parser("export", help="export the ledger as CSV")
+    export.add_argument("--csv", type=Path, required=True, help="path of the CSV file to write")
+    imp = sub.add_parser("import", help="import entries from a CSV file")
+    imp.add_argument("--csv", type=Path, required=True, help="path of the CSV file to read")
     args = parser.parse_args(argv)
 
     ledger = load(args.file)
@@ -50,6 +71,13 @@ def main(argv: list[str] | None = None) -> int:
         ledger.add(
             Entry(date.fromisoformat(args.day), Decimal(args.amount), args.category, args.note)
         )
+        save(ledger, args.file)
+        return 0
+    if args.command == "export":
+        export_csv(ledger, args.csv)
+        return 0
+    if args.command == "import":
+        ledger = import_csv(args.csv)
         save(ledger, args.file)
         return 0
     print(ledger.total())
