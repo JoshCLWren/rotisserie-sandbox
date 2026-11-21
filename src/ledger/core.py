@@ -24,3 +24,9 @@ class Ledger:
 
     def total(self) -> Decimal:
         return sum((entry.amount for entry in self.entries), Decimal("0"))
+
+    def total_by_category(self, category: str) -> Decimal:
+        return sum(
+            (entry.amount for entry in self.entries if entry.category == category),
+            Decimal("0"),
+        )
