@@ -17,6 +17,10 @@ class Entry:
     def __post_init__(self) -> None:
         if self.amount <= Decimal("0"):
             raise ValueError("amount must be positive")
+        normalized = self.category.strip().lower()
+        if not normalized:
+            raise ValueError("category must not be empty")
+        object.__setattr__(self, "category", normalized)
 
 
 @dataclass
