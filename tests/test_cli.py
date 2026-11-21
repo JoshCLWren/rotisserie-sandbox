@@ -153,4 +153,3 @@ def test_total_without_category_still_sums_everything(tmp_path: Path, capsys) ->
     assert main(["--file", str(book), "add", "2.50", "travel", "--day", "2026-01-02"]) == 0
     assert main(["--file", str(book), "total"]) == 0
     assert capsys.readouterr().out.strip() == "5.75"
->>>>>>> origin/main
