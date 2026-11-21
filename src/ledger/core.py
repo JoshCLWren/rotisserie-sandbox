@@ -30,3 +30,9 @@ class Ledger:
 
     def total(self) -> Decimal:
         return sum((entry.amount for entry in self.entries), Decimal("0"))
+
+    def total_by_category(self) -> dict[str, Decimal]:
+        totals: dict[str, Decimal] = {}
+        for entry in self.entries:
+            totals[entry.category] = totals.get(entry.category, Decimal("0")) + entry.amount
+        return totals
