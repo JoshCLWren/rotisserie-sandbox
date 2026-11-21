@@ -8,3 +8,6 @@ name = "rotisserie-sandbox"
 
 [markers]
 namespace = "rotisserie-sandbox-factory"
+
+[checks]
+fast = "command -v uv >/dev/null || python3 -m pip install --quiet --user --break-system-packages uv; export PATH=\"$HOME/.local/bin:$PATH\"; uv sync --frozen --quiet && uv run --frozen ruff check . && uv run --frozen pytest -q"
