@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from datetime import date
 from decimal import Decimal
 from pathlib import Path
@@ -34,6 +35,19 @@ def save(ledger: Ledger, path: Path) -> None:
 
 
 def main(argv: list[str] | None = None) -> int:
+    if argv is None:
+        argv = sys.argv[1:]
+    command = list(argv)
+    if "--file" in command:
+        index = command.index("--file")
+        del command[index : index + 2]
+    if command[:1] == ["months"]:
+        book = Path("ledger.json")
+        if "--file" in argv:
+            book = Path(argv[argv.index("--file") + 1])
+        for month, total in load(book).total_by_month().items():
+            print(f"{month}  {total}")
+        return 0
     parser = argparse.ArgumentParser(prog="ledger")
     parser.add_argument("--file", type=Path, default=Path("ledger.json"))
     sub = parser.add_subparsers(dest="command", required=True)
@@ -43,7 +57,6 @@ def main(argv: list[str] | None = None) -> int:
     add.add_argument("--note", default="")
     add.add_argument("--day", default=date.today().isoformat())
     sub.add_parser("total", help="print the total of all expenses")
-    sub.add_parser("months", help="print monthly totals")
     args = parser.parse_args(argv)
 
     ledger = load(args.file)
@@ -52,10 +65,6 @@ def main(argv: list[str] | None = None) -> int:
             Entry(date.fromisoformat(args.day), Decimal(args.amount), args.category, args.note)
         )
         save(ledger, args.file)
-        return 0
-    if args.command == "months":
-        for month, total in ledger.total_by_month().items():
-            print(f"{month}  {total}")
         return 0
     print(ledger.total())
     return 0
