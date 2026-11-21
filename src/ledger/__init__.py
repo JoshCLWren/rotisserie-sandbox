@@ -2,6 +2,4 @@
 
 from ledger.core import Entry, Ledger
 
-__version__ = "0.1.0"
-
-__all__ = ["Entry", "Ledger", "__version__"]
+__all__ = ["Entry", "Ledger"]
