@@ -22,5 +22,8 @@ class Ledger:
     def add(self, entry: Entry) -> None:
         self.entries.append(entry)
 
+    def count(self) -> int:
+        return len(self.entries)
+
     def total(self) -> Decimal:
         return sum((entry.amount for entry in self.entries), Decimal("0"))
