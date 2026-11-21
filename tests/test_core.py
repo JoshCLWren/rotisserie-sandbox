@@ -13,6 +13,15 @@ def test_total_sums_every_entry() -> None:
     assert ledger.total() == Decimal("6.50")
 
 
+def test_count_returns_number_of_entries() -> None:
+    ledger = Ledger()
+    assert ledger.count() == 0
+    ledger.add(Entry(date(2026, 1, 1), Decimal("2.50"), "food"))
+    ledger.add(Entry(date(2026, 1, 2), Decimal("4.00"), "travel"))
+    assert ledger.count() == 2
+    assert isinstance(ledger.count(), int)
+
+
 def test_empty_ledger_totals_zero() -> None:
     assert Ledger().total() == Decimal("0")
 
