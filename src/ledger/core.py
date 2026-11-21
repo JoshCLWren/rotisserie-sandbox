@@ -24,3 +24,10 @@ class Ledger:
 
     def total(self) -> Decimal:
         return sum((entry.amount for entry in self.entries), Decimal("0"))
+
+    def total_by_month(self) -> dict[str, Decimal]:
+        monthly: dict[str, Decimal] = {}
+        for entry in self.entries:
+            month = f"{entry.day.year:04d}-{entry.day.month:02d}"
+            monthly[month] = monthly.get(month, Decimal("0")) + entry.amount
+        return dict(sorted(monthly.items()))
