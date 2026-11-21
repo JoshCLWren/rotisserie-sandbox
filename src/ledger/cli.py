@@ -43,6 +43,7 @@ def main(argv: list[str] | None = None) -> int:
     add.add_argument("--note", default="")
     add.add_argument("--day", default=date.today().isoformat())
     sub.add_parser("total", help="print the total of all expenses")
+    sub.add_parser("months", help="print monthly totals")
     args = parser.parse_args(argv)
 
     ledger = load(args.file)
@@ -51,6 +52,10 @@ def main(argv: list[str] | None = None) -> int:
             Entry(date.fromisoformat(args.day), Decimal(args.amount), args.category, args.note)
         )
         save(ledger, args.file)
+        return 0
+    if args.command == "months":
+        for month, total in ledger.total_by_month().items():
+            print(f"{month}  {total}")
         return 0
     print(ledger.total())
     return 0
