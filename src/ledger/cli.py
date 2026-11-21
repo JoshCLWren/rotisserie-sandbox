@@ -34,12 +34,12 @@ def save(ledger: Ledger, path: Path) -> None:
     path.write_text(json.dumps(rows, indent=2) + "\n")
 
 
-def import_csv(path: Path) -> Ledger:
-    ledger = Ledger()
+def import_csv(path: Path, ledger: Ledger | None = None) -> Ledger:
+    new_ledger = Ledger()
     with path.open("r", newline="") as f:
         reader = csv.DictReader(f)
         for row in reader:
-            ledger.add(
+            new_ledger.add(
                 Entry(
                     day=date.fromisoformat(row["day"]),
                     amount=Decimal(row["amount"]),
@@ -47,7 +47,17 @@ def import_csv(path: Path) -> Ledger:
                     note=row.get("note", ""),
                 )
             )
-    return ledger
+    if ledger is not None:
+        new_ledger.entries = ledger.entries + new_ledger.entries
+    return new_ledger
+
+
+def export_csv(ledger: Ledger, path: Path) -> None:
+    with path.open("w", newline="") as f:
+        writer = csv.writer(f)
+        writer.writerow(["day", "amount", "category", "note"])
+        for entry in ledger.entries:
+            writer.writerow([entry.day.isoformat(), str(entry.amount), entry.category, entry.note])
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -77,7 +87,7 @@ def main(argv: list[str] | None = None) -> int:
         export_csv(ledger, args.csv)
         return 0
     if args.command == "import":
-        ledger = import_csv(args.csv)
+        ledger = import_csv(args.csv, ledger)
         save(ledger, args.file)
         return 0
     print(ledger.total())
