@@ -15,10 +15,22 @@ def test_add_then_total(tmp_path: Path, capsys) -> None:
 def test_export_csv_writes_header_and_every_field(tmp_path: Path) -> None:
     book = tmp_path / "ledger.json"
     assert main(["--file", str(book), "add", "3.25", "food", "--day", "2026-01-01"]) == 0
-    assert main(
-        ["--file", str(book), "add", "10.00", "travel", "--day", "2026-01-02",
-         "--note", "trip, with comma"]
-    ) == 0
+    assert (
+        main(
+            [
+                "--file",
+                str(book),
+                "add",
+                "10.00",
+                "travel",
+                "--day",
+                "2026-01-02",
+                "--note",
+                "trip, with comma",
+            ]
+        )
+        == 0
+    )
 
     out = tmp_path / "export.csv"
     assert main(["--file", str(book), "export", "--csv", str(out)]) == 0
