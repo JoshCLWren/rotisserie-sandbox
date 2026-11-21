@@ -5,10 +5,20 @@ from __future__ import annotations
 import argparse
 import json
 from datetime import date
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 from pathlib import Path
 
 from ledger.core import Entry, Ledger
+
+
+def _positive_amount(raw: str) -> Decimal:
+    try:
+        amount = Decimal(raw)
+    except InvalidOperation as exc:
+        raise argparse.ArgumentTypeError(f"invalid amount: {raw}") from exc
+    if amount <= Decimal("0"):
+        raise argparse.ArgumentTypeError("amount must be positive")
+    return amount
 
 
 def load(path: Path) -> Ledger:
@@ -38,18 +48,20 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--file", type=Path, default=Path("ledger.json"))
     sub = parser.add_subparsers(dest="command", required=True)
     add = sub.add_parser("add", help="record an expense")
-    add.add_argument("amount")
+    add.add_argument("amount", type=_positive_amount)
     add.add_argument("category")
     add.add_argument("--note", default="")
     add.add_argument("--day", default=date.today().isoformat())
     sub.add_parser("total", help="print the total of all expenses")
-    args = parser.parse_args(argv)
+    try:
+        args = parser.parse_args(argv)
+    except SystemExit as exc:
+        code = exc.code
+        return code if isinstance(code, int) else 1
 
     ledger = load(args.file)
     if args.command == "add":
-        ledger.add(
-            Entry(date.fromisoformat(args.day), Decimal(args.amount), args.category, args.note)
-        )
+        ledger.add(Entry(date.fromisoformat(args.day), args.amount, args.category, args.note))
         save(ledger, args.file)
         return 0
     print(ledger.total())

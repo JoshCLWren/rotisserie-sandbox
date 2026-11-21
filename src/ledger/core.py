@@ -14,6 +14,10 @@ class Entry:
     category: str
     note: str = ""
 
+    def __post_init__(self) -> None:
+        if self.amount <= Decimal("0"):
+            raise ValueError("amount must be positive")
+
 
 @dataclass
 class Ledger:
