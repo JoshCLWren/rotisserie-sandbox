@@ -42,7 +42,8 @@ def main(argv: list[str] | None = None) -> int:
     add.add_argument("category")
     add.add_argument("--note", default="")
     add.add_argument("--day", default=date.today().isoformat())
-    sub.add_parser("total", help="print the total of all expenses")
+    total = sub.add_parser("total", help="print the total of expenses")
+    total.add_argument("--category", help="only total entries in this category")
     args = parser.parse_args(argv)
 
     ledger = load(args.file)
@@ -52,5 +53,5 @@ def main(argv: list[str] | None = None) -> int:
         )
         save(ledger, args.file)
         return 0
-    print(ledger.total())
+    print(ledger.total(args.category))
     return 0
