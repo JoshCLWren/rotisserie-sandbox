@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import csv
 import json
 from datetime import date
 from decimal import Decimal
@@ -33,6 +34,16 @@ def save(ledger: Ledger, path: Path) -> None:
     path.write_text(json.dumps(rows, indent=2) + "\n")
 
 
+def export_csv(ledger: Ledger, path: Path) -> None:
+    with path.open("w", newline="") as fh:
+        writer = csv.writer(fh)
+        writer.writerow(["day", "amount", "category", "note"])
+        for entry in ledger.entries:
+            writer.writerow(
+                [entry.day.isoformat(), str(entry.amount), entry.category, entry.note]
+            )
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="ledger")
     parser.add_argument("--file", type=Path, default=Path("ledger.json"))
@@ -43,6 +54,8 @@ def main(argv: list[str] | None = None) -> int:
     add.add_argument("--note", default="")
     add.add_argument("--day", default=date.today().isoformat())
     sub.add_parser("total", help="print the total of all expenses")
+    export = sub.add_parser("export", help="write the ledger to CSV")
+    export.add_argument("--csv", type=Path, required=True, help="destination CSV path")
     args = parser.parse_args(argv)
 
     ledger = load(args.file)
