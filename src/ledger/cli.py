@@ -59,6 +59,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="ledger")
     parser.add_argument("--file", type=Path, default=Path("ledger.json"))
     sub = parser.add_subparsers(dest="command", required=True)
+    sub.add_parser("months", help="print monthly totals")
     add = sub.add_parser("add", help="record an expense")
     add.add_argument("amount")
     add.add_argument("category")
