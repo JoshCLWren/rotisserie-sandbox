@@ -4,17 +4,6 @@ from decimal import Decimal
 from ledger import Entry, Ledger
 
 
-def test_total_sums_every_entry() -> None:
-    ledger = Ledger()
-    ledger.add(Entry(date(2026, 1, 1), Decimal("2.50"), "food"))
-    ledger.add(Entry(date(2026, 1, 2), Decimal("4.00"), "travel"))
-    assert ledger.total() == Decimal("6.50")
-
-
-def test_empty_ledger_totals_zero() -> None:
-    assert Ledger().total() == Decimal("0")
-
-
 def test_total_by_category_sums_per_category() -> None:
     ledger = Ledger()
     ledger.add(Entry(date(2026, 1, 1), Decimal("2.50"), "food"))
@@ -39,3 +28,14 @@ def test_total_by_category_uses_decimal_not_float() -> None:
     ledger.add(Entry(date(2026, 1, 2), Decimal("0.20"), "food"))
     assert ledger.total_by_category()["food"] == Decimal("0.30")
     assert isinstance(ledger.total_by_category()["food"], Decimal)
+
+
+def test_total_sums_every_entry() -> None:
+    ledger = Ledger()
+    ledger.add(Entry(date(2026, 1, 1), Decimal("2.50"), "food"))
+    ledger.add(Entry(date(2026, 1, 2), Decimal("4.00"), "travel"))
+    assert ledger.total() == Decimal("6.50")
+
+
+def test_empty_ledger_totals_zero() -> None:
+    assert Ledger().total() == Decimal("0")
