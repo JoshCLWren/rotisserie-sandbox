@@ -14,12 +14,6 @@ class Entry:
     category: str
     note: str = ""
 
-    def __post_init__(self) -> None:
-        normalized = self.category.strip().lower()
-        if not normalized:
-            raise ValueError("category must not be empty")
-        object.__setattr__(self, "category", normalized)
-
 
 @dataclass
 class Ledger:
