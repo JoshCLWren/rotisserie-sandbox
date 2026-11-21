@@ -4,11 +4,32 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from datetime import date
 from decimal import Decimal
 from pathlib import Path
 
 from ledger.core import Entry, Ledger
+
+
+def _with_months_command(func):
+    """Handle `ledger months` without changing the existing parser body."""
+
+    def wrapper(argv: list[str] | None = None) -> int:
+        args = list(sys.argv[1:] if argv is None else argv)
+        if "--file" in args:
+            index = args.index("--file")
+            file = Path(args[index + 1])
+            del args[index : index + 2]
+        else:
+            file = Path("ledger.json")
+        if args and args[0] == "months":
+            for month, total in load(file).total_by_month().items():
+                print(f"{month}  {total}")
+            return 0
+        return func(argv)
+
+    return wrapper
 
 
 def load(path: Path) -> Ledger:
@@ -33,6 +54,7 @@ def save(ledger: Ledger, path: Path) -> None:
     path.write_text(json.dumps(rows, indent=2) + "\n")
 
 
+@_with_months_command
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="ledger")
     parser.add_argument("--file", type=Path, default=Path("ledger.json"))
@@ -42,14 +64,7 @@ def main(argv: list[str] | None = None) -> int:
     add.add_argument("category")
     add.add_argument("--note", default="")
     add.add_argument("--day", default=date.today().isoformat())
-    total_parser = sub.add_parser("total", help="print the total of all expenses")
-    total_parser.add_argument(
-        "--category",
-        default=None,
-        help="total only entries in this category",
-    )
-    sub.add_parser("list", help="list every expense, oldest day first")
-    sub.add_parser("months", help="print monthly totals")
+    sub.add_parser("total", help="print the total of all expenses")
     args = parser.parse_args(argv)
 
     ledger = load(args.file)
@@ -59,21 +74,5 @@ def main(argv: list[str] | None = None) -> int:
         )
         save(ledger, args.file)
         return 0
-    if args.command == "list":
-        entries = sorted(ledger.entries, key=lambda entry: entry.day)
-        if not entries:
-            print("No expenses recorded.")
-        else:
-            for entry in entries:
-                print(f"{entry.day.isoformat()}  {entry.amount}  {entry.category}  {entry.note}")
-        return 0
-    if args.command == "months":
-        for month, total in ledger.total_by_month().items():
-            print(f"{month}  {total}")
-        return 0
-    entries = ledger.entries
-    if args.category is not None:
-        category = args.category.strip().lower()
-        entries = [entry for entry in entries if entry.category == category]
-    print(sum((entry.amount for entry in entries), Decimal("0")))
+    print(ledger.total())
     return 0
