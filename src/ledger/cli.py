@@ -74,6 +74,8 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="ledger")
     parser.add_argument("--file", type=Path, default=Path("ledger.json"))
     sub = parser.add_subparsers(dest="command", required=True)
+    export = sub.add_parser("export", help="write the ledger to CSV")
+    export.add_argument("--csv", type=Path, required=True, help="destination CSV path")
     add = sub.add_parser("add", help="record an expense")
     add.add_argument("amount")
     add.add_argument("category")
@@ -86,9 +88,14 @@ def main(argv: list[str] | None = None) -> int:
         help="total only entries in this category",
     )
     sub.add_parser("list", help="list every expense, oldest day first")
-    export = sub.add_parser("export", help="write the ledger to CSV")
-    export.add_argument("--csv", type=Path, required=True, help="destination CSV path")
     args = parser.parse_args(argv)
+    if args.command == "export":
+        try:
+            export_csv(load(args.file), args.csv)
+        except LedgerReadError as exc:
+            print(f"ledger: cannot read {args.file}: {exc}", file=sys.stderr)
+            return 1
+        return 0
 
     try:
         ledger = load(args.file)
@@ -108,9 +115,6 @@ def main(argv: list[str] | None = None) -> int:
         else:
             for entry in entries:
                 print(f"{entry.day.isoformat()}  {entry.amount}  {entry.category}  {entry.note}")
-        return 0
-    if args.command == "export":
-        export_csv(ledger, args.csv)
         return 0
     entries = ledger.entries
     if args.category is not None:
