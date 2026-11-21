@@ -1,6 +1,8 @@
 from datetime import date
 from decimal import Decimal
 
+import pytest
+
 from ledger import Entry, Ledger
 
 
@@ -13,3 +15,13 @@ def test_total_sums_every_entry() -> None:
 
 def test_empty_ledger_totals_zero() -> None:
     assert Ledger().total() == Decimal("0")
+
+
+def test_entry_rejects_zero_amount() -> None:
+    with pytest.raises(ValueError):
+        Entry(date(2026, 1, 1), Decimal("0"), "food")
+
+
+def test_entry_rejects_negative_amount() -> None:
+    with pytest.raises(ValueError):
+        Entry(date(2026, 1, 1), Decimal("-2"), "food")
