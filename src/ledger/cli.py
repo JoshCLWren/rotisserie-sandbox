@@ -79,11 +79,6 @@ def main(argv: list[str] | None = None) -> int:
     add.add_argument("category")
     add.add_argument("--note", default="")
     add.add_argument("--day", default=date.today().isoformat())
-<<<<<<< HEAD
-    sub.add_parser("total", help="print the total of all expenses")
-    export = sub.add_parser("export", help="write the ledger to CSV")
-    export.add_argument("--csv", type=Path, required=True, help="destination CSV path")
-=======
     total_parser = sub.add_parser("total", help="print the total of all expenses")
     total_parser.add_argument(
         "--category",
@@ -91,7 +86,8 @@ def main(argv: list[str] | None = None) -> int:
         help="total only entries in this category",
     )
     sub.add_parser("list", help="list every expense, oldest day first")
->>>>>>> origin/main
+    export = sub.add_parser("export", help="write the ledger to CSV")
+    export.add_argument("--csv", type=Path, required=True, help="destination CSV path")
     args = parser.parse_args(argv)
 
     try:
@@ -105,12 +101,6 @@ def main(argv: list[str] | None = None) -> int:
         )
         save(ledger, args.file)
         return 0
-<<<<<<< HEAD
-    if args.command == "export":
-        export_csv(ledger, args.csv)
-        return 0
-    print(ledger.total())
-=======
     if args.command == "list":
         entries = sorted(ledger.entries, key=lambda entry: entry.day)
         if not entries:
@@ -119,10 +109,12 @@ def main(argv: list[str] | None = None) -> int:
             for entry in entries:
                 print(f"{entry.day.isoformat()}  {entry.amount}  {entry.category}  {entry.note}")
         return 0
+    if args.command == "export":
+        export_csv(ledger, args.csv)
+        return 0
     entries = ledger.entries
     if args.category is not None:
         category = args.category.strip().lower()
         entries = [entry for entry in entries if entry.category == category]
     print(sum((entry.amount for entry in entries), Decimal("0")))
->>>>>>> origin/main
     return 0
